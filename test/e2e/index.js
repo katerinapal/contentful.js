@@ -30,8 +30,12 @@ initServer((server) => {
   const h1 = driver.findElement(By.tagName('h1'))
 
   driver.wait(until.elementTextIs(h1, 'Success'), 30000)
-  driver.quit()
-    .then(() => {
-      server.close()
-    })
+  (async () => {
+    let generatedVariable0;
+    generatedVariable0 = await driver.quit();
+
+    return await (async () => {
+        server.close()
+      })();
+  })()
 })

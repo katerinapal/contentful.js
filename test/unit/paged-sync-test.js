@@ -43,7 +43,7 @@ test('Throws with incompatible content_type and type parameter', (t) => {
   }, /content_type.*type.*Entry/)
 })
 
-test('Initial sync with one page', (t) => {
+test('Initial sync with one page', async t => {
   t.plan(11)
   const http = {get: sinon.stub()}
   const entryWithLink = createEntry('1')
@@ -71,8 +71,9 @@ test('Initial sync with one page', (t) => {
     }
   }))
 
-  return pagedSync(http, {initial: true}, {resolveLinks: true})
-    .then((response) => {
+  const response = await pagedSync(http, {initial: true}, {resolveLinks: true});
+
+  return await (async response => {
       t.ok(http.get.args[0][1].params.initial, 'http request has initial param')
       t.equal(response.entries.length, 3, 'entries length')
       t.ok(response.entries[0].toPlainObject, 'toPlainObject on entry')
@@ -84,10 +85,10 @@ test('Initial sync with one page', (t) => {
       t.ok(response.deletedAssets[0].toPlainObject, 'toPlainObject on deletedAsset')
       t.equal(response.nextSyncToken, 'nextsynctoken', 'next sync token')
       t.equal(response.entries[0].fields.linked.sys.type, 'Entry', 'linked entry is resolved')
-    })
+    })(response);
 })
 
-test('Initial sync with one page and filter', (t) => {
+test('Initial sync with one page and filter', async t => {
   t.plan(5)
   const http = {get: sinon.stub()}
   http.get.withArgs('sync', {params: {
@@ -105,17 +106,18 @@ test('Initial sync with one page and filter', (t) => {
     }
   }))
 
-  return pagedSync(http, {initial: true, content_type: 'cat'}, {resolveLinks: true})
-    .then((response) => {
+  const response = await pagedSync(http, {initial: true, content_type: 'cat'}, {resolveLinks: true});
+
+  return await (async response => {
       t.ok(http.get.args[0][1].params.initial, 'http request has initial param')
       t.equal(http.get.args[0][1].params.content_type, 'cat', 'http request has content type filter param')
       t.equal(http.get.args[0][1].params.type, 'Entry', 'http request has entity type filter param')
       t.equal(response.entries.length, 3, 'entries length')
       t.equal(response.nextSyncToken, 'nextsynctoken', 'next sync token')
-    })
+    })(response);
 })
 
-test('Initial sync with multiple pages', (t) => {
+test('Initial sync with multiple pages', async t => {
   t.plan(12)
   const http = {get: sinon.stub()}
   http.get.withArgs('sync', {params: {initial: true, type: 'Entries'}}).returns(Promise.resolve({
@@ -151,8 +153,9 @@ test('Initial sync with multiple pages', (t) => {
     }
   }))
 
-  return pagedSync(http, {initial: true, type: 'Entries'}, {resolveLinks: true})
-    .then((response) => {
+  const response = await pagedSync(http, {initial: true, type: 'Entries'}, {resolveLinks: true});
+
+  return await (async response => {
       const objResponse = response.toPlainObject()
       t.ok(http.get.args[0][1].params.initial, 'http request has initial param')
       t.equal(http.get.args[0][1].params.type, 'Entries', 'http request has type param')
@@ -166,10 +169,10 @@ test('Initial sync with multiple pages', (t) => {
       t.equal(objResponse.deletedAssets.length, 1, 'deleted assets length')
       t.equal(objResponse.nextSyncToken, 'nextsynctoken', 'next sync token')
       t.ok(response.stringifySafe(), 'stringifies response')
-    })
+    })(response);
 })
 
-test('Sync with existing token', (t) => {
+test('Sync with existing token', async t => {
   t.plan(6)
   const http = {get: sinon.stub()}
   http.get.withArgs('sync', {params: {sync_token: 'nextsynctoken'}}).returns(Promise.resolve({
@@ -184,18 +187,19 @@ test('Sync with existing token', (t) => {
     }
   }))
 
-  return pagedSync(http, {nextSyncToken: 'nextsynctoken'}, {resolveLinks: true})
-    .then((response) => {
+  const response = await pagedSync(http, {nextSyncToken: 'nextsynctoken'}, {resolveLinks: true});
+
+  return await (async response => {
       t.equal(http.get.args[0][1].params.sync_token, 'nextsynctoken', 'http request param for sync')
       t.equal(response.entries.length, 1, 'entries length')
       t.equal(response.deletedEntries.length, 1, 'deleted entries length')
       t.equal(response.assets.length, 1, 'entries length')
       t.equal(response.deletedAssets.length, 1, 'deleted assets length')
       t.equal(response.nextSyncToken, 'nextsynctoken', 'next sync token')
-    })
+    })(response);
 })
 
-test('Initial sync with multiple pages but pagination disabled', (t) => {
+test('Initial sync with multiple pages but pagination disabled', async t => {
   t.plan(18)
 
   const http = {get: sinon.stub()}
@@ -232,8 +236,9 @@ test('Initial sync with multiple pages but pagination disabled', (t) => {
     }
   }))
 
-  return pagedSync(http, {initial: true, type: 'Entries'}, {paginate: false})
-    .then((response) => {
+  const response = await pagedSync(http, {initial: true, type: 'Entries'}, {paginate: false});
+
+  const generated_var_2 = await (async response => {
       const objResponse = response.toPlainObject()
       t.equal(http.get.callCount, 1, 'only one request was sent')
       t.ok(http.get.args[0][1].params.initial, 'http request has initial param')
@@ -248,9 +253,10 @@ test('Initial sync with multiple pages but pagination disabled', (t) => {
 
       // Manually sync next page
       return pagedSync(http, {nextPageToken: objResponse.nextPageToken}, {paginate: false})
-    })
-    .then((response) => {
-      const objResponse = response.toPlainObject()
+    })(response);
+
+  const generated_var_3 = await (async generated_var_2 => {
+      const objResponse = generated_var_2.toPlainObject()
       t.equal(http.get.callCount, 2, 'second request was sent and no pagination happened')
       t.notOk(http.get.args[1][1].params.initial, 'http request does not have initial param')
       t.equal(objResponse.nextPageToken, 'nextpage2', 'next page token')
@@ -258,12 +264,13 @@ test('Initial sync with multiple pages but pagination disabled', (t) => {
 
       // Manually sync next (last) page
       return pagedSync(http, {nextPageToken: objResponse.nextPageToken}, {paginate: false})
-    })
-    .then((response) => {
-      const objResponse = response.toPlainObject()
+    })(generated_var_2);
+
+  return await (async generated_var_3 => {
+      const objResponse = generated_var_3.toPlainObject()
       t.equal(http.get.callCount, 3, 'third request was sent and no pagination happened')
       t.notOk(http.get.args[2][1].params.initial, 'http request does not have initial param')
       t.notOk(objResponse.nextPageToken, 'next page token should not exist')
       t.equal(objResponse.nextSyncToken, 'nextsynctoken', 'next sync token')
-    })
+    })(generated_var_3);
 })
