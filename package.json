@@ -48,7 +48,7 @@
     "devdep:uninstall": "npm run devdep:clean && rimraf node_modules/contentful-sdk-core",
     "precommit": "npm run lint",
     "prepush": "npm run test:prepush",
-    "transpile": "babel --plugins async-to-promises ./lib/create-contentful-api.js && babel --plugins async-to-promises ./lib/paged-sync.js && babel --plugins async-to-promises ./test/e2e/index.js && babel --plugins async-to-promises ./test/integration/tests.js && babel --plugins async-to-promises ./test/unit/create-contentful-api-test.js && babel --plugins async-to-promises ./test/unit/paged-sync-test.js"
+    "transpile": "babel --plugins async-to-promises ./lib/create-contentful-api.js -o ./lib/create-contentful-api.js && babel --plugins async-to-promises ./lib/paged-sync.js -o ./lib/paged-sync.js && babel --plugins async-to-promises ./test/e2e/index.js -o ./test/e2e/index.js && babel --plugins async-to-promises ./test/integration/tests.js -o ./test/integration/tests.js && babel --plugins async-to-promises ./test/unit/create-contentful-api-test.js -o ./test/unit/create-contentful-api-test.js && babel --plugins async-to-promises ./test/unit/paged-sync-test.js -o ./test/unit/paged-sync-test.js"
   },
   "types": "./index.d.ts",
   "files": [
